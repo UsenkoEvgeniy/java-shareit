@@ -12,15 +12,22 @@ public class UserMapper {
     }
 
     public static User mapToUser(UserDto userDto, User user) {
+        User newUser = new User();
         if (userDto.getId() != null) {
-            user.setId(userDto.getId());
+            newUser.setId(userDto.getId());
+        } else {
+            newUser.setId(user.getId());
         }
         if (userDto.getName() != null) {
-            user.setName(userDto.getName());
+            newUser.setName(userDto.getName());
+        } else {
+            newUser.setName(user.getName());
         }
         if (userDto.getEmail() != null) {
-            user.setEmail(userDto.getEmail());
+            newUser.setEmail(userDto.getEmail());
+        } else {
+            newUser.setEmail(user.getEmail());
         }
-        return user;
+        return newUser;
     }
 }

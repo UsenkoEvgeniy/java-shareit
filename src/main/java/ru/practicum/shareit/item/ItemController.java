@@ -21,19 +21,20 @@ import java.util.Collection;
 @RequestMapping("/items")
 public class ItemController {
     private final ItemService itemService;
+    private static final String USER_ID = "X-Sharer-User-Id";
 
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
     }
 
     @PostMapping
-    public ItemDto create(@RequestHeader("X-Sharer-User-Id") long userId, @Valid @RequestBody ItemDto itemDto) {
+    public ItemDto create(@RequestHeader(USER_ID) long userId, @Valid @RequestBody ItemDto itemDto) {
         log.info("Post request from userId {} for item{}", userId, itemDto);
         return itemService.create(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestHeader("X-Sharer-User-Id") long userId, @RequestBody ItemDto itemDto,
+    public ItemDto update(@RequestHeader(USER_ID) long userId, @RequestBody ItemDto itemDto,
                           @PathVariable long itemId) {
         log.info("Patch request from userId {} for item {}", userId, itemId);
         return itemService.update(userId, itemId, itemDto);
@@ -46,7 +47,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> getAllForUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public Collection<ItemDto> getAllForUser(@RequestHeader(USER_ID) long userId) {
         log.info("Get all items of user {}", userId);
         return itemService.getAllForUser(userId);
     }

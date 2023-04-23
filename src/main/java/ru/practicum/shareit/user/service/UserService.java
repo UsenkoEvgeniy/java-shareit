@@ -1,15 +1,15 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.EmailIsUsedException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
 import java.util.Collection;
@@ -20,9 +20,11 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserStorage userStorage;
+    private final Validator validator;
 
-    public UserService(UserStorage userStorage) {
+    public UserService(UserStorage userStorage, Validator validator) {
         this.userStorage = userStorage;
+        this.validator = validator;
     }
 
     public Collection<UserDto> getAll() {
@@ -54,19 +56,18 @@ public class UserService {
     public UserDto update(long id, UserDto userFields) {
         User userFromDb = userStorage.get(id);
         String email = userFields.getEmail();
-        if (!userFromDb.getEmail().equalsIgnoreCase(email) && userStorage.isEmailExist(email)) {
+        if (email != null && !userFromDb.getEmail().equalsIgnoreCase(email) && userStorage.isEmailExist(email)) {
             log.warn("Email {} is already in use", email);
             throw new EmailIsUsedException(email);
         }
-        UserMapper.mapToUser(userFields, userFromDb);
-        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        Set<ConstraintViolation<User>> constraintViolations = validator.validate(userFromDb);
+        User updatedUser = UserMapper.mapToUser(userFields, userFromDb);
+        Set<ConstraintViolation<User>> constraintViolations = validator.validate(updatedUser);
         if (!constraintViolations.isEmpty()) {
             log.warn("Bad user fields");
             throw new ValidationException("Bad user fields");
         }
         log.debug("Updating user {}", id);
-        User userUpdated = userStorage.update(userFromDb);
+        User userUpdated = userStorage.update(updatedUser);
         return UserMapper.mapToDto(userUpdated);
     }
 

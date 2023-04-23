@@ -7,6 +7,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.exceptions.EmailIsUsedException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.ValidationException;
 
