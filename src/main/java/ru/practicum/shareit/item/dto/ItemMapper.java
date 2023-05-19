@@ -1,15 +1,63 @@
 package ru.practicum.shareit.item.dto;
 
+import ru.practicum.shareit.booking.dto.BookingDtoForOwner;
+import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ItemMapper {
     public static ItemDto mapToDto(Item item) {
-        ItemDto itemDto = new ItemDto();
-        itemDto.setId(item.getId());
-        itemDto.setName(item.getName());
-        itemDto.setDescription(item.getDescription());
-        itemDto.setAvailable(item.isAvailable());
-        return itemDto;
+        return new ItemDto(item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.isAvailable());
+    }
+
+    public static ItemDtoWithCommentsAndBookings mapToDtoWithComments(Item item, List<Comment> comments, List<Booking> bookings) {
+        return new ItemDtoWithCommentsAndBookings(item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.isAvailable(),
+                comments.stream().map(CommentMapper::mapToDto).collect(Collectors.toList()),
+                getLastBooking(bookings),
+                getNextBooking(bookings));
+    }
+
+    public static ItemDtoWithBookings mapToDtoWithBookings(Item item, List<Booking> bookings) {
+        return new ItemDtoWithBookings(item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.isAvailable(),
+                getLastBooking(bookings),
+                getNextBooking(bookings));
+    }
+
+    private static BookingDtoForOwner getNextBooking(List<Booking> bookings) {
+        if (bookings == null) {
+            return null;
+        }
+        return bookings.stream()
+                .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
+                .map(BookingMapper::mapToDtoForOwner)
+                .min(Comparator.comparing(BookingDtoForOwner::getStart))
+                .orElse(null);
+    }
+
+    private static BookingDtoForOwner getLastBooking(List<Booking> bookings) {
+        if (bookings == null) {
+            return null;
+        }
+        return bookings.stream()
+                .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
+                .map(BookingMapper::mapToDtoForOwner)
+                .max(Comparator.comparing(BookingDtoForOwner::getEnd))
+                .orElse(null);
     }
 
     public static Item mapToItem(ItemDto itemDto, Item item) {

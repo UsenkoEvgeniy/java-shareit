@@ -1,12 +1,15 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PSQLException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.EmailIsUsedException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import javax.validation.ConstraintViolation;
@@ -18,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional
 public class UserService {
     private final UserStorage userStorage;
     private final Validator validator;
@@ -27,39 +31,42 @@ public class UserService {
         this.validator = validator;
     }
 
+    @Transactional(readOnly = true)
     public Collection<UserDto> getAll() {
         log.debug("Getting all users");
-        return userStorage.getAll().stream().map(UserMapper::mapToDto).collect(Collectors.toList());
+        return userStorage.findAll().stream().map(UserMapper::mapToDto).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public UserDto getById(long id) {
-        log.debug("Getting user for id {}", id);
-        User user = userStorage.get(id);
-        if (user == null) {
-            log.warn("User doesn't exist for id {}", id);
-            throw new UserNotFoundException(String.valueOf(id));
-        }
+        log.debug("Getting userDto for id {}", id);
+        User user = userStorage.findById(id).orElseThrow(() -> new UserNotFoundException(String.valueOf(id)));
         return UserMapper.mapToDto(user);
     }
 
-    public UserDto create(UserDto userDto) {
-        if (userStorage.isEmailExist(userDto.getEmail())) {
-            log.warn("Email {} is already in use", userDto.getEmail());
-            throw new EmailIsUsedException(userDto.getEmail());
+    @Transactional(readOnly = true)
+    public User findById(long id) {
+        log.debug("Getting user for id {}", id);
+        return userStorage.findById(id).orElseThrow(() -> new UserNotFoundException(String.valueOf(id)));
+    }
+
+    public UserDto create(User user) {
+        log.debug("Creating user {}", user);
+        try {
+            return UserMapper.mapToDto(userStorage.save(user));
+        } catch (DataIntegrityViolationException e) {
+            if (e.getMostSpecificCause() instanceof PSQLException) {
+                String message = e.getMostSpecificCause().getMessage();
+                log.warn("Email is not unique {}", message);
+                throw new EmailIsUsedException(message);
+            } else {
+                throw e;
+            }
         }
-        User user = UserMapper.mapToUser(userDto, new User());
-        log.debug("Creating user {}", userDto);
-        User userCreated = userStorage.create(user);
-        return UserMapper.mapToDto(userCreated);
     }
 
     public UserDto update(long id, UserDto userFields) {
-        User userFromDb = userStorage.get(id);
-        String email = userFields.getEmail();
-        if (email != null && !userFromDb.getEmail().equalsIgnoreCase(email) && userStorage.isEmailExist(email)) {
-            log.warn("Email {} is already in use", email);
-            throw new EmailIsUsedException(email);
-        }
+        User userFromDb = userStorage.findById(id).orElseThrow();
         User updatedUser = UserMapper.mapToUser(userFields, userFromDb);
         Set<ConstraintViolation<User>> constraintViolations = validator.validate(updatedUser);
         if (!constraintViolations.isEmpty()) {
@@ -67,20 +74,17 @@ public class UserService {
             throw new ValidationException("Bad user fields");
         }
         log.debug("Updating user {}", id);
-        User userUpdated = userStorage.update(updatedUser);
-        return UserMapper.mapToDto(userUpdated);
+        return UserMapper.mapToDto(userStorage.save(updatedUser));
     }
 
+    @Transactional(readOnly = true)
     public boolean isExist(long userId) {
         log.debug("Check if user {} exists", userId);
-        return userStorage.isExist(userId);
+        return userStorage.existsById(userId);
     }
 
     public void delete(long id) {
         log.debug("Deleting user {}", id);
-        if (!userStorage.delete(id)) {
-            log.warn("User {} is not found", id);
-            throw new UserNotFoundException(String.valueOf(id));
-        }
+        userStorage.deleteById(id);
     }
 }
