@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
 import ru.practicum.shareit.item.dto.ItemDtoWithCommentsAndBookings;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.ItemService;
@@ -53,9 +52,9 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDtoWithBookings> getAllForUser(@RequestHeader(USER_ID) long userId) {
+    public Collection<ItemDtoWithCommentsAndBookings> getAllForUser(@RequestHeader(USER_ID) long userId) {
         log.info("Get all items of user {}", userId);
-        return itemService.getAllForUser(userId).stream().sorted(Comparator.comparing(ItemDtoWithBookings::getId)).collect(Collectors.toList());
+        return itemService.getAllForOwner(userId).stream().sorted(Comparator.comparing(ItemDtoWithCommentsAndBookings::getId)).collect(Collectors.toList());
     }
 
     @GetMapping("/search")
@@ -67,7 +66,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public CommentDto createComment(@RequestHeader(USER_ID) long userId, @RequestBody Comment comment,
                                     @PathVariable long itemId) {
-        log.info("Post request from user {} to create cooment {} for item {}", userId, comment, itemId);
+        log.info("Post request from user {} to create comment {} for item {}", userId, comment, itemId);
         return itemService.createComment(userId, comment, itemId);
     }
 }

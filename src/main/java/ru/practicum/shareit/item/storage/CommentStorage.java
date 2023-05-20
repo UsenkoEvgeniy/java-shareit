@@ -6,5 +6,7 @@ import ru.practicum.shareit.item.model.Comment;
 import java.util.List;
 
 public interface CommentStorage extends CrudRepository<Comment, Long> {
+    List<Comment> findByItem_OwnerId(Long ownerId);
+
     List<Comment> findByItem_Id(Long id);
 }

@@ -19,9 +19,6 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-bookings.
- */
 @Data
 @Entity
 @Table(name = "bookings")

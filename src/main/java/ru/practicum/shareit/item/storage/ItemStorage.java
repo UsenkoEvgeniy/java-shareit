@@ -13,6 +13,5 @@ public interface ItemStorage extends JpaRepository<Item, Long> {
 
     @Query("select i from Item i " +
             "where i.available = true and (upper(i.name) like upper(concat('%', :text, '%')) or upper(i.description) like upper(concat('%', :text, '%')))")
-
     Collection<Item> findAvailable(@Param("text") String text);
 }

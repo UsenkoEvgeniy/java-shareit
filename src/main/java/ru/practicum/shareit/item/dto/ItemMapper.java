@@ -7,6 +7,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,16 +25,7 @@ public class ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.isAvailable(),
-                comments.stream().map(CommentMapper::mapToDto).collect(Collectors.toList()),
-                getLastBooking(bookings),
-                getNextBooking(bookings));
-    }
-
-    public static ItemDtoWithBookings mapToDtoWithBookings(Item item, List<Booking> bookings) {
-        return new ItemDtoWithBookings(item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.isAvailable(),
+                comments != null ? comments.stream().map(CommentMapper::mapToDto).collect(Collectors.toList()) : Collections.emptyList(),
                 getLastBooking(bookings),
                 getNextBooking(bookings));
     }

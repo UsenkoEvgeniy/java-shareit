@@ -13,7 +13,6 @@ import ru.practicum.shareit.exceptions.WrongUserException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
 import ru.practicum.shareit.item.dto.ItemDtoWithCommentsAndBookings;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
@@ -29,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 
 @Slf4j
 @Service
@@ -86,15 +84,16 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Transactional(readOnly = true)
-
     @Override
-    public Collection<ItemDtoWithBookings> getAllForUser(long userId) {
+    public Collection<ItemDtoWithCommentsAndBookings> getAllForOwner(long userId) {
         log.debug("Getting all items of user {}", userId);
         Collection<Item> items = itemStorage.findByOwnerId(userId);
         Map<Long, List<Booking>> bookingMap = bookingStorage.findByItemOwnerId(userId).stream()
                 .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
+        Map<Long, List<Comment>> commentMap = commentStorage.findByItem_OwnerId(userId).stream()
+                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
         return items.stream()
-                .map(item -> ItemMapper.mapToDtoWithBookings(item, bookingMap.get(item.getId())))
+                .map(item -> ItemMapper.mapToDtoWithComments(item, commentMap.get(item.getId()), bookingMap.get(item.getId())))
                 .collect(Collectors.toList());
     }
 
