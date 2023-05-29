@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,8 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public Collection<BookingDto> findBookingsForUserOrOwner(long userId, BookingState state, boolean isOwner) {
+    public Collection<BookingDto> findBookingsForUserOrOwner(long userId, BookingState state, boolean isOwner,
+                                                             Integer from, Integer size) {
         if (!userStorage.existsById(userId)) {
             throw new UserNotFoundException(String.valueOf(userId));
         }
@@ -114,14 +116,14 @@ public class BookingService {
                 case ALL:
                     break;
                 case CURRENT:
-                    predicate = criteriaBuilder.and(criteriaBuilder.<LocalDateTime>lessThan(root.get("start"), LocalDateTime.now()),
-                            criteriaBuilder.greaterThan(root.<LocalDateTime>get("end"), LocalDateTime.now()));
+                    predicate = criteriaBuilder.and(criteriaBuilder.lessThan(root.get("start"), LocalDateTime.now()),
+                            criteriaBuilder.greaterThan(root.get("end"), LocalDateTime.now()));
                     break;
                 case PAST:
-                    predicate = criteriaBuilder.lessThan(root.<LocalDateTime>get("end"), LocalDateTime.now());
+                    predicate = criteriaBuilder.lessThan(root.get("end"), LocalDateTime.now());
                     break;
                 case FUTURE:
-                    predicate = criteriaBuilder.greaterThan(root.<LocalDateTime>get("start"), LocalDateTime.now());
+                    predicate = criteriaBuilder.greaterThan(root.get("start"), LocalDateTime.now());
                     break;
                 case WAITING:
                     predicate = criteriaBuilder.equal(root.get("status"), BookingStatus.WAITING);
@@ -138,7 +140,7 @@ public class BookingService {
             log.debug("Search has {} criteria", predicates.size());
             return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         });
-        return bookingStorage.findAll(specification, Sort.by(Sort.Direction.DESC, "start"))
+        return bookingStorage.findAll(specification, PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "start")))
                 .stream()
                 .map(BookingMapper::mapToDto)
                 .collect(Collectors.toList());

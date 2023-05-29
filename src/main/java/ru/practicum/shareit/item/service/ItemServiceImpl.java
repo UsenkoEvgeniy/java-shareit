@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
@@ -85,12 +87,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public Collection<ItemDtoWithCommentsAndBookings> getAllForOwner(long userId) {
+    public Collection<ItemDtoWithCommentsAndBookings> getAllForOwner(long userId, Integer from, Integer size) {
         log.debug("Getting all items of user {}", userId);
-        Collection<Item> items = itemStorage.findByOwnerId(userId);
-        Map<Long, List<Booking>> bookingMap = bookingStorage.findByItemOwnerId(userId).stream()
+        Collection<Item> items = itemStorage.findByOwnerId(userId, PageRequest.of(from / size, size, Sort.by("id")));
+        Map<Long, List<Booking>> bookingMap = bookingStorage.findByItemOwnerId(userId, items).stream()
                 .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
-        Map<Long, List<Comment>> commentMap = commentStorage.findByItem_OwnerId(userId).stream()
+        Map<Long, List<Comment>> commentMap = commentStorage.findByItem_OwnerIdAndItemIn(userId, items).stream()
                 .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
         return items.stream()
                 .map(item -> ItemMapper.mapToDtoWithComments(item, commentMap.get(item.getId()), bookingMap.get(item.getId())))
@@ -99,13 +101,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public Collection<ItemDto> getAvailable(String text) {
+    public Collection<ItemDto> getAvailable(String text, Integer from, Integer size) {
         if (text.length() == 0) {
             log.debug("Empty search text");
             return Collections.emptyList();
         }
         log.debug("Getting all available items for search text {}", text);
-        return itemStorage.findAvailable(text).stream().map(ItemMapper::mapToDto).collect(Collectors.toList());
+        return itemStorage.findAvailable(text, PageRequest.of(from / size, size)).stream().map(ItemMapper::mapToDto).collect(Collectors.toList());
     }
 
     @Override
