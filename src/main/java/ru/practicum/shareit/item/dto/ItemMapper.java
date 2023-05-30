@@ -17,7 +17,8 @@ public class ItemMapper {
         return new ItemDto(item.getId(),
                 item.getName(),
                 item.getDescription(),
-                item.isAvailable());
+                item.isAvailable(),
+                item.getRequestId());
     }
 
     public static ItemDtoWithCommentsAndBookings mapToDtoWithComments(Item item, List<Comment> comments, List<Booking> bookings) {
@@ -61,6 +62,9 @@ public class ItemMapper {
         }
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
+        }
+        if (itemDto.getRequestId() != null) {
+            item.setRequestId(itemDto.getRequestId());
         }
         return item;
     }

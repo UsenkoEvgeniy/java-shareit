@@ -15,9 +15,9 @@ public interface ItemService {
 
     ItemDtoWithCommentsAndBookings get(long itemId, long id);
 
-    Collection<ItemDtoWithCommentsAndBookings> getAllForOwner(long userId);
+    Collection<ItemDtoWithCommentsAndBookings> getAllForOwner(long userId, Integer from, Integer size);
 
-    Collection<ItemDto> getAvailable(String text);
+    Collection<ItemDto> getAvailable(String text, Integer from, Integer size);
 
     CommentDto createComment(long userId, Comment comment, long itemId);
 }

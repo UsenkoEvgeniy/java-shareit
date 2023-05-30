@@ -17,9 +17,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -52,15 +51,19 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDtoWithCommentsAndBookings> getAllForUser(@RequestHeader(USER_ID) long userId) {
-        log.info("Get all items of user {}", userId);
-        return itemService.getAllForOwner(userId).stream().sorted(Comparator.comparing(ItemDtoWithCommentsAndBookings::getId)).collect(Collectors.toList());
+    public Collection<ItemDtoWithCommentsAndBookings> getAllForUser(@RequestHeader(USER_ID) long userId,
+                                                                    @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                                    @RequestParam(defaultValue = "20") @Min(1) Integer size) {
+        log.info("Get all items of user {}, from {}, size {}", userId, from, size);
+        return itemService.getAllForOwner(userId, from, size);
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> getAvailable(@RequestParam String text) {
-        log.info("Search request with text = {}", text);
-        return itemService.getAvailable(text);
+    public Collection<ItemDto> getAvailable(@RequestParam String text,
+                                            @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                            @RequestParam(defaultValue = "20") @Min(1) Integer size) {
+        log.info("Search request with text = {}, from {}, size {}", text, from, size);
+        return itemService.getAvailable(text, from, size);
     }
 
     @PostMapping("/{itemId}/comment")

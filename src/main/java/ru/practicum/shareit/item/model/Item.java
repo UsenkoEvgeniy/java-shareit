@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,4 +27,6 @@ public class Item {
     @NotBlank
     private String description;
     private boolean available = false;
+    @Column(name = "request_id")
+    private Long requestId;
 }
