@@ -19,6 +19,8 @@ import ru.practicum.shareit.booking.model.BookingState;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
+import static ru.practicum.shareit.utils.Constant.USER_ID;
+
 @Controller
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
@@ -26,7 +28,6 @@ import javax.validation.constraints.Min;
 @Validated
 public class BookingController {
 	private final BookingClient bookingClient;
-	private static final String USER_ID = "X-Sharer-User-Id";
 
 	@GetMapping
 	public ResponseEntity<Object> getBookings(@RequestHeader(USER_ID) long userId,
@@ -34,7 +35,7 @@ public class BookingController {
 											  @RequestParam(defaultValue = "0") @Min(0) Integer from,
 											  @RequestParam(defaultValue = "20") @Min(1) Integer size) {
 		log.info("Get booking with state {}, userId={}, from={}, size={}", state, userId, from, size);
-		return bookingClient.getBookings(userId, state, from, size);
+		return bookingClient.getBookings(userId, state, from, size, false);
 	}
 
 	@PostMapping
@@ -65,6 +66,6 @@ public class BookingController {
 													   @RequestParam(defaultValue = "0") @Min(0) Integer from,
 													   @RequestParam(defaultValue = "20") @Min(1) Integer size) {
 		log.info("Get request for bookings of user {} as owner with state {}", userId, state);
-		return bookingClient.findBookingsForUserOrOwner(userId, state, from, size);
+		return bookingClient.getBookings(userId, state, from, size, true);
 	}
 }

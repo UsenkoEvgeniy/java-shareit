@@ -18,6 +18,8 @@ import ru.practicum.shareit.booking.service.BookingService;
 import javax.validation.constraints.Min;
 import java.util.Collection;
 
+import static ru.practicum.shareit.utils.Constant.USER_ID;
+
 @Slf4j
 @RestController
 @RequestMapping(path = "/bookings")
@@ -25,7 +27,6 @@ import java.util.Collection;
 public class BookingController {
 
     private final BookingService bookingService;
-    private static final String USER_ID = "X-Sharer-User-Id";
 
     public BookingController(BookingService bookingService) {
         this.bookingService = bookingService;

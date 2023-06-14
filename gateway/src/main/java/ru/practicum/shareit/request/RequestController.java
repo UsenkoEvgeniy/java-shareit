@@ -17,6 +17,8 @@ import ru.practicum.shareit.request.dto.RequestDto;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
+import static ru.practicum.shareit.utils.Constant.USER_ID;
+
 @Controller
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
@@ -24,8 +26,6 @@ import javax.validation.constraints.Min;
 @Validated
 public class RequestController {
     private final RequestClient requestClient;
-
-    private static final String USER_ID = "X-Sharer-User-Id";
 
     @PostMapping
     public ResponseEntity<Object> create(@RequestHeader(USER_ID) Long userId, @Valid @RequestBody RequestDto request) {

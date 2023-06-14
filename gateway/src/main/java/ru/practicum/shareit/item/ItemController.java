@@ -20,6 +20,8 @@ import ru.practicum.shareit.marker.OnCreate;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
+import static ru.practicum.shareit.utils.Constant.USER_ID;
+
 @Controller
 @RequestMapping("/items")
 @Slf4j
@@ -27,7 +29,6 @@ import javax.validation.constraints.Min;
 @RequiredArgsConstructor
 public class ItemController {
     private final ItemClient itemClient;
-    private static final String USER_ID = "X-Sharer-User-Id";
 
     @PostMapping
     @Validated(OnCreate.class)
@@ -38,7 +39,7 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<Object> update(@RequestHeader(USER_ID) long userId, @RequestBody ItemDto itemDto,
-                          @PathVariable long itemId) {
+                                         @PathVariable long itemId) {
         log.info("Patch request from userId {} for item {}", userId, itemId);
         return itemClient.update(userId, itemId, itemDto);
     }
@@ -51,24 +52,24 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Object> getAllForUser(@RequestHeader(USER_ID) long userId,
-                                                                    @RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                                                    @RequestParam(defaultValue = "20") @Min(1) Integer size) {
+                                                @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                                @RequestParam(defaultValue = "20") @Min(1) Integer size) {
         log.info("Get all items of user {}, from {}, size {}", userId, from, size);
         return itemClient.getAllForOwner(userId, from, size);
     }
 
     @GetMapping("/search")
     public ResponseEntity<Object> getAvailable(@RequestParam String text,
-                                            @RequestParam(defaultValue = "0") @Min(0) Integer from,
-                                            @RequestParam(defaultValue = "20") @Min(1) Integer size,
-                                            @RequestHeader(USER_ID) long userId) {
+                                               @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                               @RequestParam(defaultValue = "20") @Min(1) Integer size,
+                                               @RequestHeader(USER_ID) long userId) {
         log.info("Search request with text = {}, from {}, size {}", text, from, size);
         return itemClient.getAvailable(text, from, size, userId);
     }
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> createComment(@RequestHeader(USER_ID) long userId, @RequestBody CommentDto comment,
-                                    @PathVariable long itemId) {
+                                                @PathVariable long itemId) {
         log.info("Post request from user {} to create comment {} for item {}", userId, comment, itemId);
         return itemClient.createComment(userId, comment, itemId);
     }

@@ -20,12 +20,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.Collection;
 
+import static ru.practicum.shareit.utils.Constant.USER_ID;
+
 @Slf4j
 @RestController
 @RequestMapping("/items")
 public class ItemController {
     private final ItemService itemService;
-    private static final String USER_ID = "X-Sharer-User-Id";
 
     public ItemController(ItemService itemService) {
         this.itemService = itemService;

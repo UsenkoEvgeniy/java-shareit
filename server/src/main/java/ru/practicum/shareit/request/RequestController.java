@@ -17,13 +17,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.Collection;
 
+import static ru.practicum.shareit.utils.Constant.USER_ID;
+
 @RestController
 @Slf4j
 @RequestMapping("/requests")
 @Validated
 public class RequestController {
     private final RequestService requestService;
-    private static final String USER_ID = "X-Sharer-User-Id";
 
     public RequestController(RequestService requestService) {
         this.requestService = requestService;
